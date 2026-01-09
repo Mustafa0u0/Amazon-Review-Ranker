@@ -55,10 +55,10 @@ st.markdown("""
         --text-muted: #3f3f3f;
     }
     
-    /* Global Text Visibility Fix */
-    * {
+    /* Global Text Visibility Fix - Targeted to avoid breaking icons */
+    html, body, .stApp, p, h1, h2, h3, h4, h5, h6, label, .stMarkdown, .stText, .stDataFrame, .stTextInput, .stTextArea, .stSelectbox {
         font-family: 'Source Sans 3', sans-serif !important;
-        color: #0f1111; /* Force dark text generally */
+        color: #0f1111;
     }
     
     /* Specific Streamlit Elements that might default to white */
