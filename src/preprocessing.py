@@ -141,7 +141,7 @@ def preprocess_text(text, use_pos_tagging=True):
             
             for word, tag in pos_tags:
                 # Filter stopwords and short words
-                if word not in stop_words and len(word) > 2 and word in english_words:
+                if word not in stop_words and len(word) > 2 and (not english_words or word in english_words):
                     # Lemmatize with POS tag
                     wn_tag = get_wordnet_pos(tag)
                     lemma = lemmatizer.lemmatize(word, pos=wn_tag)
@@ -149,7 +149,7 @@ def preprocess_text(text, use_pos_tagging=True):
         else:
             # Simple lemmatization
             final_tokens = [lemmatizer.lemmatize(w) for w in tokens 
-                           if w not in stop_words and len(w) > 2 and w in english_words]
+                           if w not in stop_words and len(w) > 2 and (not english_words or w in english_words)]
     
         return ' '.join(final_tokens)
     

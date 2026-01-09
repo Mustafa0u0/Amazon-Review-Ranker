@@ -413,6 +413,17 @@ except ImportError:
     stopwords = None
     WordNetLemmatizer = None
 
+# Enhanced NLTK download for Streamlit Cloud
+if nltk:
+    try:
+        nltk.download('stopwords')
+        nltk.download('wordnet')
+        nltk.download('omw-1.4')
+        nltk.download('words')
+        nltk.download('averaged_perceptron_tagger')
+    except Exception:
+        pass
+
 def load_model(model_name):
     try:
         import joblib
