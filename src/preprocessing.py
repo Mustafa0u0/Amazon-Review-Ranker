@@ -141,20 +141,27 @@ def preprocess_text(text, use_pos_tagging=True):
                 final_tokens = []
                 
                 for word, tag in pos_tags:
-                    # Filter stopwords and short words
-                    if word not in stop_words and len(word) > 2 and (not english_words or word in english_words):
-                        # Lemmatize with POS tag
+                    # Filter stopwords and short words only (removed english_words check)
+                    if (stop_words is None or word not in stop_words) and len(word) > 2:
                         wn_tag = get_wordnet_pos(tag)
-                        lemma = lemmatizer.lemmatize(word, pos=wn_tag)
+                        if lemmatizer:
+                            lemma = lemmatizer.lemmatize(word, pos=wn_tag)
+                        else:
+                            lemma = word
                         final_tokens.append(lemma)
-            except LookupError:
-                # Fallback if averaged_perceptron_tagger is missing
-                final_tokens = [lemmatizer.lemmatize(w) for w in tokens 
-                               if w not in stop_words and len(w) > 2 and (not english_words or w in english_words)]
+            except (LookupError, Exception):
+                # Fallback: just filter stopwords
+                final_tokens = [w for w in tokens 
+                               if (stop_words is None or w not in stop_words) and len(w) > 2]
         else:
             # Simple lemmatization
-            final_tokens = [lemmatizer.lemmatize(w) for w in tokens 
-                           if w not in stop_words and len(w) > 2 and (not english_words or w in english_words)]
+            final_tokens = []
+            for w in tokens:
+                if (stop_words is None or w not in stop_words) and len(w) > 2:
+                    if lemmatizer:
+                        final_tokens.append(lemmatizer.lemmatize(w))
+                    else:
+                        final_tokens.append(w)
     
         return ' '.join(final_tokens)
     
