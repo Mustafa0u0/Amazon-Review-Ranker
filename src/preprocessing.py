@@ -134,18 +134,23 @@ def preprocess_text(text, use_pos_tagging=True):
             return ""
         
         if use_pos_tagging:
-            # POS-aware lemmatization
-            from nltk import pos_tag
-            pos_tags = pos_tag(tokens)
-            final_tokens = []
-            
-            for word, tag in pos_tags:
-                # Filter stopwords and short words
-                if word not in stop_words and len(word) > 2 and (not english_words or word in english_words):
-                    # Lemmatize with POS tag
-                    wn_tag = get_wordnet_pos(tag)
-                    lemma = lemmatizer.lemmatize(word, pos=wn_tag)
-                    final_tokens.append(lemma)
+            try:
+                # POS-aware lemmatization
+                from nltk import pos_tag
+                pos_tags = pos_tag(tokens)
+                final_tokens = []
+                
+                for word, tag in pos_tags:
+                    # Filter stopwords and short words
+                    if word not in stop_words and len(word) > 2 and (not english_words or word in english_words):
+                        # Lemmatize with POS tag
+                        wn_tag = get_wordnet_pos(tag)
+                        lemma = lemmatizer.lemmatize(word, pos=wn_tag)
+                        final_tokens.append(lemma)
+            except LookupError:
+                # Fallback if averaged_perceptron_tagger is missing
+                final_tokens = [lemmatizer.lemmatize(w) for w in tokens 
+                               if w not in stop_words and len(w) > 2 and (not english_words or w in english_words)]
         else:
             # Simple lemmatization
             final_tokens = [lemmatizer.lemmatize(w) for w in tokens 
