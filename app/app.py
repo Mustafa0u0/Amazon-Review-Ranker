@@ -588,35 +588,54 @@ def create_comparison_chart(bayes_probs, svm_probs, classes_ref):
 # =============================================================================
 def get_pipeline_steps(text):
     steps = {}
-    if stopwords is None:
-        return {"error": "NLTK is not available. Install nltk to view the analysis pipeline."}
     try:
-        # 1. Raw Input
-        steps['raw'] = text
+        # 1. Original Text
+        steps['original'] = text
         
-        # 2. Cleaning (Lower, remove URLs/HTML)
+        # 2. Lowercased
         text_lower = text.lower()
-        text_clean = re.sub(r'http\S+|www\S+', '', text_lower)
-        text_clean = re.sub(r'<.*?>', '', text_clean)
-        text_clean = re.sub(r'[^a-z\s]', '', text_clean)
-        steps['cleaning'] = text_clean
+        steps['lowercased'] = text_lower
         
-        # 3. Tokenization
+        # 3. URLs Removed
+        text_no_urls = re.sub(r'http\S+|www\S+', '', text_lower)
+        steps['urls_removed'] = text_no_urls
+        
+        # 4. HTML Removed
+        text_no_html = re.sub(r'<.*?>', '', text_no_urls)
+        steps['html_removed'] = text_no_html
+        
+        # 5. Punctuation Removed
+        text_clean = re.sub(r'[^a-z\s]', '', text_no_html)
+        steps['punctuation_removed'] = text_clean
+        
+        # 6. Tokenization
         tokens = text_clean.split()
         steps['tokenization'] = str(tokens)
         
-        # 4. Stopword Removal
-        stop_words = set(stopwords.words('english'))
-        tokens_no_stop = [w for w in tokens if w not in stop_words]
-        steps['stopword_removal'] = str(tokens_no_stop)
+        # 7. POS Tagging
+        try:
+            from nltk import pos_tag
+            pos_tags = pos_tag(tokens)
+            steps['pos_tagging'] = str(pos_tags)
+        except:
+            steps['pos_tagging'] = "POS tagger not available"
         
-        # 5. Lemmatization (Final)
+        # 8. Stopword Removal
+        try:
+            stop_words = set(stopwords.words('english')) if stopwords else set()
+        except:
+            stop_words = set()
+        
+        tokens_no_stop = [w for w in tokens if w not in stop_words and len(w) > 2]
+        removed_words = [w for w in tokens if w in stop_words or len(w) <= 2]
+        steps['stopword_removal'] = str(tokens_no_stop)
+        steps['stopwords_removed'] = str(removed_words)
+        
+        # 9. Lemmatization (Final)
         cleaned_text = preprocess_text(text, use_pos_tagging=True)
         steps['lemmatization'] = cleaned_text
         
         return steps
-    except LookupError:
-        return {"error": "NLTK data is missing. Run nltk.download('stopwords') and nltk.download('wordnet')."}
     except Exception as e:
         return {"error": str(e)}
 
@@ -706,13 +725,33 @@ def main():
                     if "error" in steps:
                         st.warning(steps["error"])
                     else:
-                        st.markdown("### 1. Tokenization & Cleaning")
-                        st.code(steps.get('cleaning', ''), language="text")
+                        st.markdown("### 1. Original Text")
+                        st.code(steps.get('original', ''), language="text")
                         
-                        st.markdown("### 2. Stopword Removal")
+                        st.markdown("### 2. Lowercased")
+                        st.code(steps.get('lowercased', ''), language="text")
+                        
+                        st.markdown("### 3. URLs Removed")
+                        st.code(steps.get('urls_removed', ''), language="text")
+                        
+                        st.markdown("### 4. HTML Removed")
+                        st.code(steps.get('html_removed', ''), language="text")
+                        
+                        st.markdown("### 5. Punctuation Removed")
+                        st.code(steps.get('punctuation_removed', ''), language="text")
+                        
+                        st.markdown("### 6. Tokenization")
+                        st.code(steps.get('tokenization', ''), language="text")
+                        
+                        st.markdown("### 7. POS Tagging")
+                        st.code(steps.get('pos_tagging', ''), language="text")
+                        
+                        st.markdown("### 8. Stopword Removal")
                         st.code(steps.get('stopword_removal', ''), language="text")
+                        st.markdown("**Stopwords Removed:**")
+                        st.code(steps.get('stopwords_removed', ''), language="text")
                         
-                        st.markdown("### 3. Lemmatization (Model Input)")
+                        st.markdown("### 9. Lemmatization (Model Input)")
                         st.code(steps.get('lemmatization', ''), language="text")
                     
             else:

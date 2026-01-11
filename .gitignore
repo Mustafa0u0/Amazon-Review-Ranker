@@ -37,7 +37,7 @@ ENV/
 
 # Project specific
 data/
-saved_models/*.pkl
+# saved_models/*.pkl
 saved_models/*.h5
 saved_models/*.joblib
 .env

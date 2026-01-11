@@ -8,6 +8,7 @@ jupyter
 streamlit
 joblib
 plotly
+Pillow
 
 # Notebook dependencies
 gensim
